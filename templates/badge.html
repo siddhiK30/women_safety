@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+body {
+    background: linear-gradient(135deg, #fff, #fff);
+    color: #fff;
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 16px;
+}
+
+.dashboard {
+    max-width: 1000px;
+    margin: 24px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.card {
+    background: rgba(10, 10, 10, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+.badges-grid {
+    display: flex;
+    gap: 24px;
+}
+
+.safety-badge {
+    width: 120px;
+    height: 120px;
+    position: relative;
+}
+
+.badge-outer {
+    width: 150%;
+    height: 150%;
+    background: linear-gradient(135deg, #fbbf24 ,  #fbbf24);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    animation: pulse 2s infinite;
+    box-shadow: 0 4px 15px rgba(234, 222, 51, 0.3);
+}
+
+.badge-inner {
+    width: 90%;
+    height: 90%;
+    background: linear-gradient(135deg, #6868d8, #6f6fdf);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    text-align: center;
+}
+
+.trophy-icon {
+    width: 75px;
+    height: 75px;
+    margin-bottom: 4px;
+    color: #fbbf24;
+}
+
+.badge-title {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    color: #e5e5e5;
+    line-height: 1.2;
+}
+
+.incident-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: #a1a1aa;
+}
+
+
+.badge-count {
+    font-size: 14px;
+    color: #a1a1aa;
+    margin-bottom: 4px;
+}
+
+.badge-number {
+    font-size: 48px;
+    background: linear-gradient(45deg, #c084fc, #e879f9);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+}
+
+
+/* Add a hidden class */
+.hidden {
+    display: none !important;
+}
+
+
+
+.top-users-title {
+    color: #a1a1aa;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.user-rank {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, rgba(126, 34, 206, 0.1), rgba(107, 33, 168, 0.1));
+    border-radius: 6px;
+    border: 1px solid rgba(126, 34, 206, 0.2);
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7e22ce, #6b21a8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.user-info {
+    flex-grow: 1;
+}
+
+.user-name {
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.user-badge-count {
+    color: #a1a1aa;
+    font-size: 12px;
+}
+
+.rank-number {
+    color: #c084fc;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.calendar-section {
+    padding: 16px;
+}
+
+.submissions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.submissions-count {
+    font-size: 14px;
+    font-weight: 500;
+    background: linear-gradient(45deg, #c084fc, #e879f9);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.activity-stats {
+    color: #a1a1aa;
+    font-size: 12px;
+}
+
+.month-labels {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    margin-bottom: 6px;
+    color: #a1a1aa;
+    font-size: 11px;
+    text-align: center;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 3px;
+}
+
+.month-column {
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 3px;
+}
+
+.week-block {
+    aspect-ratio: 1;
+    background: #27272a;
+    border-radius: 3px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.week-block:hover {
+    transform: scale(1.1);
+    background: #3f3f46;
+}
+
+.week-block.active {
+    background: linear-gradient(135deg, #7e22ce, #6b21a8);
+}
+.badges-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.badges-container {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.top-users {
+    margin-left: auto;
+    background: rgba(39, 39, 42, 0.5);
+    padding: 12px;
+    border-radius: 8px;
+    min-width: 220px;
+}
+
+.tooltip {
+    position: fixed;
+    background: rgba(24, 24, 27, 0.95);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.shine {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.2) 50%,
+        rgba(255,255,255,0) 100%
+    );
+    animation: shine 2s infinite;
+    transform: rotate(45deg);
+}
+
+@keyframes shine {
+    0% { transform: translateX(-200%) rotate(45deg); }
+    100% { transform: translateX(200%) rotate(45deg); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+</style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="card badges-section">
+        <div class="badges-container">
+            <div>
+                <div class="badge-count">Badges</div>
+                <div class="badge-number">{{ total_badges }}</div>
+            </div>
+            
+            <div class="badges-grid" id="badgesGrid">
+                
+                <div class="safety-badge">
+                    <div class="badge-outer">
+                        <div class="shine"></div>
+                        <div class="badge-inner">
+                            <svg class="trophy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                <path d="M4 22h16"></path>
+                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                            </svg>
+                            <div class="badge-title">TOP FLAG<br>REPORTER</div>
+                        </div>
+                    </div>
+                </div>
+               
+                
+                <div class="safety-badge">
+                    <div class="badge-outer">
+                        <div class="shine"></div>
+                        <div class="badge-inner">
+                            <svg class="trophy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                <path d="M4 22h16"></path>
+                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                            </svg>
+                            <div class="badge-title">TOP INCIDENT<br>REPORTER</div>
+                        </div>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+        <div class="top-users">
+            <div class="top-users-title">Top Badge Earners</div>
+            <div class="user-rank">
+                <div class="user-avatar">J</div>
+                <div class="user-info">
+                    <div class="user-name">Nidhi</div>
+                    <div class="user-badge-count">15 badges</div>
+                </div>
+                <div class="rank-number">#1</div>
+            </div>
+            <div class="user-rank">
+                <div class="user-avatar">S</div>
+                <div class="user-info">
+                    <div class="user-name">Siddhi</div>
+                    <div class="user-badge-count">12 badges</div>
+                </div>
+                <div class="rank-number">#2</div>
+            </div>
+            <div class="user-rank">
+                <div class="user-avatar">M</div>
+                <div class="user-info">
+                    <div class="user-name">Vrinda</div>
+                    <div class="user-badge-count">10 badges</div>
+                </div>
+                <div class="rank-number">#3</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card calendar-section">
+        <div class="submissions-header">
+            <div class="submissions-count">4 Incident and 17 Flags Reported in the past year</div>
+            <div class="activity-stats">Total active days: 160</div>
+        </div>
+        <div class="month-labels">
+            <span>DEC</span>
+            <span>JAN</span>
+            <span>FEB</span>
+            <span>MAR</span>
+            <span>APR</span>
+            <span>MAY</span>
+            <span>JUN</span>
+            <span>JUL</span>
+            <span>AUG</span>
+            <span>SEP</span>
+            <span>OCT</span>
+            <span>NOV</span>
+        </div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+</div>
+<div id="tooltip" class="tooltip"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.getElementById('calendar-grid');
+    const tooltip = document.getElementById('tooltip');
+    
+    const activeWeeks = [
+        [0, 2],
+        [1, 4],
+        [6, 1],
+        [6, 4]
+    ];
+
+    const messages = {
+        '0-2': '1 Flag reported',
+        '1-4': '2 Flags reported',
+        '6-1': '1 Incident reported',
+        '6-4': '3 Flags reported'
+    };
+    
+    for (let month = 0; month < 12; month++) {
+        const monthCol = document.createElement('div');
+        monthCol.className = 'month-column';
+        
+        for (let week = 0; week < 5; week++) {
+            const weekBlock = document.createElement('div');
+            weekBlock.className = 'week-block';
+            
+            const blockId = `${month}-${week}`;
+            if (activeWeeks.some(([m, w]) => m === month && w === week)) {
+                weekBlock.classList.add('active');
+            }
+            
+            weekBlock.addEventListener('mouseover', (e) => {
+                if (messages[blockId]) {
+                    const rect = e.target.getBoundingClientRect();
+                    tooltip.style.display = 'block';
+                    tooltip.textContent = messages[blockId];
+                    
+                    tooltip.style.left = `${rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2)}px`;
+                    tooltip.style.top = `${rect.top - tooltip.offsetHeight - 8}px`;
+                }
+            });
+            
+            weekBlock.addEventListener('mouseout', () => {
+                tooltip.style.display = 'none';
+            });
+            
+            monthCol.appendChild(weekBlock);
+        }
+        
+        grid.appendChild(monthCol);
+    }
+});
+</script>
+</body>
+</html>

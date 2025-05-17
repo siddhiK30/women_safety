@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Route Deviation Tracker</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.css" type="text/css">
+    <style>
+        /* Previous styles remain the same */
+        :root {
+            --deep-violet: #4B0082;
+            --medium-violet: #9370DB;
+            --light-lavender: #E6E6FA;
+            --dark-lavender: #967BB6;
+        }
+        
+        body { 
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+            background-color: var(--deep-violet);
+        }
+        
+        #sidebar {
+            width: 25%;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--deep-violet), var(--medium-violet));
+            overflow-y: auto;
+            color: var(--light-lavender);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+        
+        #sidebar h2 {
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        #map {
+            width: 75%;
+            height: 100%;
+        }
+        
+        .alert {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--dark-lavender);
+            border-radius: 12px;
+            border: 1px solid var(--light-lavender);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .safe-button {
+            padding: 10px 20px;
+            background-color: var(--light-lavender);
+            color: var(--deep-violet);
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .safe-button:hover {
+            background-color: white;
+            transform: scale(1.05);
+        }
+        
+        #sidebar p {
+            line-height: 1.6;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(230, 230, 250, 0.1);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h2>Safety Dashboard</h2>
+            <div id="alertBox" style="display: none;" class="alert">
+                <strong>Alert!</strong><br>
+                <span id="alertMessage">Confirm if you are safe.</span><br>
+                <button onclick="handleConfirmSafety()" class="safe-button">I'm Safe</button>
+            </div>
+            <p>Set your route, and the system will monitor for deviations and inactivity.</p>
+        </div>
+        <div id="map"></div>
+    </div>
+     <!-- Alert Modal -->
+     <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <h2>Safety Check</h2>
+            <p id="modalMessage"></p>
+            <button onclick="handleConfirmSafety()" class="safe-button">I'm Safe</button>
+        </div>
+    </div>
+
+    <!-- Alert Sound -->
+    <audio id="alertSound" class="alert-sound" loop>
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+    </audio>
+
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWFuYXZpMTIzIiwiYSI6ImNsc3hjdjAzcTAxb3kycXAya3IyNnl3djgifQ.vyfIAPnhABA9sgvga4F6XA';
+        
+        let userLocation = null;
+        let mapInstance = null;
+        let directions = null;
+        let routeCoords = [];
+        let deviationAlert = false;
+        let sosTimeout = null;
+        let lastLocation = null;
+        let lastMovementTime = Date.now();
+        let stationaryTimeout = null;
+        let stationaryCheckTimeout = null;
+        const safeDistanceThreshold = 0.005;
+        const stationaryThreshold = 0.0001; // Minimum movement to be considered not stationary
+        const stationaryTimeLimit = 0.5 * 60 * 1000; // 8 minutes in milliseconds
+        const sosDelay = 5 * 1000; // 1 minute in milliseconds
+
+        async function storeUserLocation(location) {
+            try {
+                await fetch('https://suraksha-84726-default-rtdb.firebaseio.com/users/N4iwwMbD5xViwkdjFSFk7dmQTyw2/location.json', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(location)
+                });
+            } catch (error) {
+                console.error('Error storing location:', error);
+            }
+        }
+
+        function initMap() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        const { latitude, longitude } = position.coords;
+                        userLocation = { latitude, longitude };
+                        lastLocation = { latitude, longitude };
+                        storeUserLocation({ latitude, longitude });
+                        setupMap();
+                        startStationaryCheck();
+                    },
+                    error => {
+                        console.error("Error getting location:", error);
+                        alert("Unable to retrieve your location. Please ensure location services are enabled.");
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function setupMap() {
+            // Previous map setup code remains the same
+            mapInstance = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [userLocation.longitude, userLocation.latitude],
+                zoom: 14
+            });
+
+            directions = new MapboxDirections({
+                accessToken: mapboxgl.accessToken,
+                unit: 'metric',
+                profile: 'mapbox/driving'
+            });
+            mapInstance.addControl(directions, 'top-left');
+
+            new mapboxgl.Marker({ color: '#4B0082' })
+                .setLngLat([userLocation.longitude, userLocation.latitude])
+                .addTo(mapInstance)
+                .setPopup(new mapboxgl.Popup().setText('You are here'));
+
+            directions.on('route', e => {
+                if (e.route && e.route[0]) {
+                    routeCoords = e.route[0].geometry.coordinates;
+                    monitorRoute(routeCoords);
+                }
+            });
+        }
+
+        function startStationaryCheck() {
+            if (stationaryCheckTimeout) {
+                clearTimeout(stationaryCheckTimeout);
+            }
+            stationaryCheckTimeout = setInterval(checkStationary, 10000); // Check every 10 seconds
+        }
+
+        function checkStationary() {
+            if (lastLocation && !deviationAlert) {
+                const timeSinceLastMovement = Date.now() - lastMovementTime;
+                if (timeSinceLastMovement >= stationaryTimeLimit) {
+                    handleStationary();
+                }
+            }
+        }
+
+       
+
+        function monitorRoute(routeCoords) {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    position => {
+                        const { latitude, longitude } = position.coords;
+                        storeUserLocation({ latitude, longitude });
+
+                        // Check if user has moved
+                        if (lastLocation) {
+                            const movement = Math.sqrt(
+                                Math.pow(longitude - lastLocation.longitude, 2) + 
+                                Math.pow(latitude - lastLocation.latitude, 2)
+                            );
+                            if (movement > stationaryThreshold) {
+                                lastMovementTime = Date.now();
+                            }
+                        }
+
+                        lastLocation = { latitude, longitude };
+
+                        if (Array.isArray(routeCoords) && routeCoords.length > 0) {
+                            const isDeviating = checkDeviation([longitude, latitude], routeCoords);
+                            if (isDeviating) {
+                                handleDeviation();
+                            } else if (deviationAlert) {
+                                clearTimeout(sosTimeout);
+                                deviationAlert = false;
+                                document.getElementById('alertBox').style.display = 'none';
+                            }
+                        }
+                    },
+                    error => console.error("Error watching position:", error)
+                );
+            }
+        }
+
+        function checkDeviation(currentCoords, routeCoords) {
+            if (!Array.isArray(routeCoords) || routeCoords.length === 0) return false;
+            return !routeCoords.some(([lng, lat]) => {
+                const distance = Math.sqrt(
+                    Math.pow(currentCoords[0] - lng, 2) + Math.pow(currentCoords[1] - lat, 2)
+                );
+                return distance < safeDistanceThreshold;
+            });
+        }
+
+        
+        // Add this function before your sendSosAlert function
+function getCookie(name) {
+    const value = document.cookie;
+    const parts = value.split(`; ${name}=`); // Correct usage of template literal
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+function sendSosAlert() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                
+                fetch("/send-sos/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken")
+                    },
+                    body: JSON.stringify({ latitude, longitude }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("SOS sent successfully:", data);
+                    alert("Emergency contacts have been notified!");
+                })
+                .catch(error => {
+                    console.error("Error sending SOS:", error);
+                    alert("Failed to send emergency alert.");
+                });
+            },
+            (error) => {
+                alert("Unable to fetch location. Please enable GPS.");
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+}
+
+
+      
+        let alertSound = document.getElementById('alertSound');
+        let alertModal = document.getElementById('alertModal');
+
+        function showAlert(message, isEmergency = false) {
+            // Show sidebar alert
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertBox').style.display = 'block';
+            
+            // Show modal alert
+            document.getElementById('modalMessage').textContent = message;
+            alertModal.style.display = 'flex';
+            
+            // Play sound
+            alertSound.play();
+            
+            // Show browser notification if available
+            if (Notification.permission === "granted") {
+                new Notification("Safety Alert", { body: message });
+                alertSound.pause();
+            }
+            
+            // Show browser alert for emergency situations
+            if (isEmergency) {
+                alert(message);
+                alertSound.pause();
+            }
+        }
+
+        function handleStationary() {
+            if (!deviationAlert) {
+                deviationAlert = true;
+                showAlert('You haven\'t moved for 8 minutes. Are you safe?');
+                sosTimeout = setTimeout(() => {
+                    console.log("sendSosAlert")
+
+                    
+                    sendSosAlert();
+                    alertSound.pause();   
+                }, sosDelay);
+            }
+        }
+
+        function handleDeviation() {
+            if (!deviationAlert) {
+                deviationAlert = true;
+                showAlert('Deviation Detected! Confirm if you are safe.');
+                sosTimeout = setTimeout(() => {
+                    showAlert('Emergency: No response received! Sending SOS Alert!', true);
+                    sendSosAlert();
+                }, sosDelay);
+            }
+        }
+
+        function handleConfirmSafety() {
+            deviationAlert = false;
+            document.getElementById('alertBox').style.display = 'none';
+            alertModal.style.display = 'none';
+            alertSound.pause();
+            alertSound.currentTime = 0;
+            clearTimeout(sosTimeout);
+            lastMovementTime = Date.now();
+        }
+
+        // Request notification permission when the page loads
+        function requestNotificationPermission() {
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
+        }
+
+        // Initialize everything
+        function init() {
+            initMap();
+            requestNotificationPermission();
+        }
+        initMap();
+    </script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Awareness Tips</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            padding: 1.5rem;
+            color: #1e1b4b;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #6b21a8;
+            margin-bottom: 1rem;
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #d8b4fe;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #9333ea;
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-btn {
+            background: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b21a8;
+        }
+
+        .category-btn.active {
+            background: #9333ea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-btn:hover:not(.active) {
+            background: #f3e8ff;
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .tips-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .tip-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tip-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .tip-icon-container {
+            background: #f3e8ff;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .tip-icon {
+            width: 24px;
+            height: 24px;
+            color: #6b21a8;
+        }
+
+        .tip-title {
+            font-weight: 600;
+            color: #1e1b4b;
+            flex-grow: 1;
+        }
+
+        .tip-content {
+            margin-top: 1rem;
+            display: none;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .tip-content.active {
+            display: block;
+        }
+
+        .tip-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .tag {
+            background: #f3e8ff;
+            color: #6b21a8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+        }
+
+        .chevron-icon {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .tip-card.active .chevron-icon {
+            transform: rotate(90deg);
+        }
+
+        .tip-card.active .tip-icon-container {
+            background: #9333ea;
+        }
+
+        .tip-card.active .tip-icon {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .categories {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Safety Awareness Tips</h1>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search safety tips...">
+        </div>
+
+        <div class="categories">
+            <button class="category-btn active" data-category="daily">
+                <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Daily Safety
+            </button>
+            <button class="category-btn" data-category="emergency">
+                <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                Emergency
+            </button>
+            <button class="category-btn" data-category="awareness">
+                <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                Awareness
+            </button>
+            <button class="category-btn" data-category="prevention">
+                <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                Prevention
+            </button>
+        </div>
+
+        <div class="tips-container">
+            <!-- Tips will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        const tips = {
+            daily: [
+                {
+                    title: "Trust Your Instincts",
+                    description: "If a situation or person makes you uncomfortable, trust your gut feeling. Your instincts are a natural defense mechanism.",
+                    icon: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+                    tags: ['personal', 'basic']
+                },
+                {
+                    title: "Stay Alert in Public",
+                    description: "Keep your head up and stay aware of your surroundings. Avoid using headphones or phone while walking alone.",
+                    icon: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+                    tags: ['public', 'awareness']
+                },
+                {
+                    title: "Secure Your Home",
+                    description: "Always lock doors and windows before leaving or sleeping. Install good quality locks and consider security cameras or doorbell cameras.",
+                    icon: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+                    tags: ['home', 'security']
+                },
+                {
+                    title: "Safe Transportation",
+                    description: "Use trusted transportation services. Share ride details with friends or family. Keep your vehicle well-maintained and check it regularly.",
+                    icon: '<path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><path d="M5 3H2a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M12 12h0"/><path d="M12 6h0"/>',
+                    tags: ['transport', 'vehicle']
+                }
+            ],
+            emergency: [
+                {
+                    title: "Emergency Numbers",
+                    description: "Save important emergency numbers: Police (100), Women's Helpline (1091), Ambulance (102). Keep them easily accessible.",
+                    icon: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+                    tags: ['contact', 'important']
+                },
+                {
+                    title: "Emergency Kit",
+                    description: "Maintain an emergency kit with first aid supplies, flashlight, batteries, important documents, and basic necessities. Keep it easily accessible.",
+                    icon: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+                    tags: ['preparation', 'supplies']
+                },
+                {
+                    title: "Medical Information",
+                    description: "Keep a list of important medical information including blood type, allergies, and emergency contacts. Consider wearing a medical ID if needed.",
+                    icon: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+                    tags: ['medical', 'health']
+                }
+            ],
+            awareness: [
+                {
+                    title: "Digital Safety",
+                    description: "Be cautious with personal information online. Use strong passwords and privacy settings.",
+                    icon: '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+                    tags: ['online', 'digital']
+                },
+                {
+                    title: "Situational Awareness",
+                    description: "Stay aware of exits in public places. Notice and report suspicious behavior. Keep emergency contacts easily accessible.",
+                    icon: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+                    tags: ['public', 'awareness']
+                },
+                {
+                    title: "Social Media Privacy",
+                    description: "Avoid sharing real-time location updates. Review privacy settings regularly. Be careful about sharing personal details online.",
+                    icon: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+                    tags: ['digital', 'privacy']
+                },
+                {
+                    title: "Identity Protection",
+                    description: "Regularly monitor accounts for suspicious activity. Use secure networks for sensitive transactions. Keep important documents safe.",
+                    icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+                    tags: ['identity', 'security']
+                }
+            ],
+            prevention: [
+                {
+                    title: "Safety Apps",
+                    description: "Install and learn to use personal safety apps. Share your location with trusted contacts.",
+                    icon: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+                    tags: ['digital', 'technology']
+                },
+                {
+                    title: "Self-Defense Basics",
+                    description: "Learn basic self-defense techniques. Know how to call for help effectively. Consider taking a self-defense class.",
+                    icon: '<path d="M4 14h6m4 0h6"/><path d="M12 4v16"/>',
+                    tags: ['defense', 'personal']
+                },
+                {
+                    title: "Regular Safety Checks",
+                    description: "Regularly check home security systems, smoke detectors, and emergency supplies. Update emergency contact information as needed.",
+                    icon: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+                    tags: ['maintenance', 'home']
+                },
+                {
+                    title: "Travel Safety",
+                    description: "Research destinations before traveling. Keep copies of important documents. Share itinerary with trusted contacts.",
+                    icon: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
+                    tags: ['travel', 'preparation']
+                }
+            ]
+        };
+
+        function createTipCard(tip) {
+            return `
+                <div class="tip-card">
+                    <div class="tip-header">
+                        <div class="tip-icon-container">
+                            <svg class="tip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                ${tip.icon}
+                            </svg>
+                        </div>
+                        <h3 class="tip-title">${tip.title}</h3>
+                        <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+                    <div class="tip-content">
+                        <p>${tip.description}</p>
+                        <div class="tip-tags">
+                            ${tip.tags.map(tag => <span class="tag">#${tag}</span>).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showTips(category) {
+            const container = document.querySelector('.tips-container');
+            container.innerHTML = tips[category].map(createTipCard).join('');
+        }
+
+        // Initial load
+        showTips('daily');
+
+        // Event Listeners
+        document.querySelector('.categories').addEventListener('click', (e) => {
+            const btn = e.target.closest('.category-btn');
+            if (btn) {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                showTips(btn.dataset.category);
+            }
+        });
+
+        document.querySelector('.tips-container').addEventListener('click', (e) => {
+            const card = e.target.closest('.tip-card');
+            if (card) {
+                const content = card.querySelector('.tip-content');
+                const isActive = card.classList.contains('active');
+                
+                // Close other cards
+                document.querySelectorAll('.tip-card').forEach(c => {
+                    c.classList.remove('active');
+                    c.querySelector('.tip-content').classList.remove('active');
+                });
+
+                if (!isActive) {
+                    card.classList.add('active');
+                    content.classList.add('active');
+                }
+            }
+        });
+
+        document.querySelector('.search-input').addEventListener('input', (e) => {
+            const searchText = e.target.value.toLowerCase();
+            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
+            
+            const filteredTips = tips[activeCategory].filter(tip => 
+                tip.title.toLowerCase().includes(searchText) ||
+                tip.description.toLowerCase().includes(searchText) ||
+                tip.tags.some(tag => tag.toLowerCase().includes(searchText))
+            );
+
+            document.querySelector('.tips-container').innerHTML = 
+                filteredTips.map(createTipCard).join('');
+        });
+    </script>
+</body>
+</html>

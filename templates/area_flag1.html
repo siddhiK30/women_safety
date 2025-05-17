@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shared Map Markers</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        #sidebar {
+            width: 25%;
+            padding: 20px;
+            background: linear-gradient(135deg, #4B0082, #9370DB);
+            color: #E6E6FA;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+
+        #map {
+            width: 75%;
+            height: 100%;
+        }
+
+        #sidebar h1 {
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .location-info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(230, 230, 250, 0.1);
+            border-radius: 8px;
+        }
+
+        .flag-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .flag-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .safe-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .moderate-btn {
+            background-color: #FFC107;
+            color: black;
+        }
+
+        .unsafe-btn {
+            background-color: #F44336;
+            color: white;
+        }
+
+        #instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(230, 230, 250, 0.1);
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .marker-popup {
+            padding: 5px;
+            font-size: 12px;
+        }
+
+        /* Custom cluster styles */
+        .marker-cluster {
+            background-clip: padding-box;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .marker-cluster-safe {
+            background-color: rgba(76, 175, 80, 0.6);
+        }
+
+        .marker-cluster-moderate {
+            background-color: rgba(255, 193, 7, 0.6);
+        }
+
+        .marker-cluster-unsafe {
+            background-color: rgba(244, 67, 54, 0.6);
+        }
+
+        .marker-cluster div {
+            width: 30px;
+            height: 30px;
+            margin-left: 5px;
+            margin-top: 5px;
+            text-align: center;
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .marker-cluster-safe div {
+            background-color: rgba(76, 175, 80, 0.8);
+        }
+
+        .marker-cluster-moderate div {
+            background-color: rgba(255, 193, 7, 0.8);
+            color: black;
+        }
+
+        .marker-cluster-unsafe div {
+            background-color: rgba(244, 67, 54, 0.8);
+        }
+        .police-station-icon {
+            background-color: white;
+            border: 2px solid #1a237e;
+            border-radius: 4px;
+            width: 36px !important;
+            height: 36px !important;
+            display: flex;
+            color: red;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .police-station-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+        .user-location-icon {
+            background-color: #ff4444;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 20px !important;
+            height: 20px !important;
+            box-shadow: 0 0 0 4px rgba(255, 68, 68, 0.4);
+        }
+
+        /* Pulse animation for user location */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+        }
+
+        .user-location-icon {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h1>Safety Dashboard</h1>
+            <div id="instructions">
+                Click on any location on the map to flag its safety status.
+            </div>
+            <div id="location-info" class="location-info" style="display: none;">
+                <h3>Selected Location</h3>
+                <p>Latitude: <span id="lat"></span></p>
+                <p>Longitude: <span id="lng"></span></p>
+                <div class="flag-options">
+                    <button class="flag-btn safe-btn" onclick="selectSafety('safe')">Safe</button>
+                    <button class="flag-btn moderate-btn" onclick="selectSafety('moderate')">Moderate</button>
+                    <button class="flag-btn unsafe-btn" onclick="selectSafety('unsafe')">Unsafe</button>
+                </div>
+            </div>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <script>
+        const csrfToken = '{{ csrf_token }}';
+        const map = L.map('map').setView([19.0760, 72.8777], 12);
+        let tempMarker = null;
+        let tempLatLng = null;
+        let allMarkers = [];
+
+        // Custom cluster icon creator based on majority safety status
+        const createClusterIcon = function(cluster) {
+            // Count markers by safety status
+            const markers = cluster.getAllChildMarkers();
+            let safeCounts = {
+                safe: 0,
+                moderate: 0,
+                unsafe: 0
+            };
+            
+            markers.forEach(marker => {
+                const status = marker.options.status;
+                safeCounts[status]++;
+            });
+
+            // Determine majority status
+            let majorityStatus = 'moderate';
+            if (safeCounts.safe > safeCounts.moderate && safeCounts.safe > safeCounts.unsafe) {
+                majorityStatus = 'safe';
+            } else if (safeCounts.unsafe > safeCounts.safe && safeCounts.unsafe > safeCounts.moderate) {
+                majorityStatus = 'unsafe';
+            }
+
+            // Create cluster icon with appropriate styling
+            const count = cluster.getChildCount();
+            return L.divIcon({
+                html: `<div>$count</div>`,
+                className: `marker-cluster marker-cluster-${majorityStatus}`,
+                iconSize: L.point(40, 40)
+            });
+        };
+        
+        // Initialize marker cluster group with custom icon creation
+        const markerClusterGroup = L.markerClusterGroup({
+            iconCreateFunction: createClusterIcon,
+            disableClusteringAtZoom: 16,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: true,
+            zoomToBoundsOnClick: true,
+            maxClusterRadius: 50,
+            animate: true,
+            chunkedLoading: true
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        const PROXIMITY_RADIUS = 5;
+        const HOVER_RADIUS = 50;
+
+        const circleStyles = {
+            safe: {
+                color: '#4CAF50',
+                fillColor: '#4CAF50',
+                fillOpacity: 0.6,
+                radius: 10
+            },
+            moderate: {
+                color: '#FFC107',
+                fillColor: '#FFC107',
+                fillOpacity: 0.6,
+                radius: 10
+            },
+            unsafe: {
+                color: '#F44336',
+                fillColor: '#F44336',
+                fillOpacity: 0.6,
+                radius: 10
+            }
+        };
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lon2-lon1) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                    Math.cos(φ1) * Math.cos(φ2) *
+                    Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            return R * c;
+        }
+
+        function getProximityStats(lat, lng) {
+            let safe = 0, moderate = 0, unsafe = 0;
+            
+            allMarkers.forEach(marker => {
+                const distance = calculateDistance(
+                    marker.lat, marker.lng,
+                    lat, lng
+                );
+
+                if (distance <= HOVER_RADIUS) {
+                    switch(marker.safety_status) {
+                        case 'safe':
+                            safe++;
+                            break;
+                        case 'moderate':
+                            moderate++;
+                            break;
+                        case 'unsafe':
+                            unsafe++;
+                            break;
+                    }
+                }
+            });
+
+            return { safe, moderate, unsafe };
+        }
+
+        function createMarker(markerData) {
+            const marker = L.circleMarker(
+                [markerData.lat, markerData.lng],
+                {
+                    ...circleStyles[markerData.safety_status],
+                    status: markerData.safety_status // Add status to marker options for cluster coloring
+                }
+            );
+
+            const popup = L.popup().setContent(() => {
+                const stats = getProximityStats(markerData.lat, markerData.lng);
+                return `
+                    <div class="marker-popup">
+                        <strong>Within 50m radius:</strong><br>
+                        Safe: ${stats.safe}<br>
+                        Moderate: ${stats.moderate}<br>
+                        Unsafe: ${stats.unsafe}
+                    </div>
+                `;
+            });
+
+            // Add mouseover event to show popup
+            marker.on('mouseover', function(e) {
+                this.openPopup();
+            });
+
+            // Add mouseout event to hide popup
+            marker.on('mouseout', function(e) {
+                this.closePopup();
+            });
+
+            marker.bindPopup(popup);
+            return marker;
+        }
+
+        function updateNearbyMarkers(newMarker) {
+            const updates = [];
+
+            allMarkers.forEach(marker => {
+                const distance = calculateDistance(
+                    marker.lat, marker.lng,
+                    newMarker.lat, newMarker.lng
+                );
+
+                if (distance <= PROXIMITY_RADIUS) {
+                    if ((marker.safety_status === 'unsafe' && newMarker.safety_status === 'safe') ||
+                        (marker.safety_status === 'safe' && newMarker.safety_status === 'unsafe')) {
+                        updates.push({
+                            id: marker.id,
+                            lat: marker.lat,
+                            lng: marker.lng,
+                            safety_status: 'moderate'
+                        });
+                    }
+
+                    if ((marker.safety_status === 'moderate' && newMarker.safety_status === 'unsafe') ||
+                        (marker.safety_status === 'unsafe' && newMarker.safety_status === 'moderate')) {
+                        updates.push({
+                            id: marker.id,
+                            lat: marker.lat,
+                            lng: marker.lng,
+                            safety_status: 'unsafe'
+                        });
+                    }
+                }
+            });
+
+            updates.forEach(update => {
+                axios.put(`/api/markers/${update.id}/`, update, {
+                    headers: { 'X-CSRFToken': csrfToken }
+                })
+                .then(() => loadMarkers())
+                .catch(error => console.error('Error updating marker:', error));
+            });
+        }
+
+        function loadMarkers() {
+            axios.get('/api/markers/')
+                .then(response => {
+                    allMarkers = response.data;
+                    markerClusterGroup.clearLayers();
+                    
+                    allMarkers.forEach(markerData => {
+                        const marker = createMarker(markerData);
+                        markerClusterGroup.addLayer(marker);
+                    });
+
+                    if (!map.hasLayer(markerClusterGroup)) {
+                        map.addLayer(markerClusterGroup);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching markers:', error);
+                });
+        }
+
+        function selectSafety(status) {
+            if (tempLatLng) {
+                if (tempMarker) {
+                    map.removeLayer(tempMarker);
+                }
+
+                const newMarker = {
+                    lat: tempLatLng.lat,
+                    lng: tempLatLng.lng,
+                    safety_status: status
+                };
+
+                axios.post('/api/markers/', newMarker, {
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => {
+                    console.log('Marker saved:', response.data);
+                    updateNearbyMarkers(response.data);
+                    loadMarkers();
+                    document.getElementById('location-info').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error saving marker:', error);
+                });
+
+                tempLatLng = null;
+            }
+        }
+
+        window.onload = loadMarkers;
+
+        map.on('click', function(e) {
+            tempLatLng = e.latlng;
+            
+            if (tempMarker) {
+                map.removeLayer(tempMarker);
+            }
+
+            tempMarker = L.circleMarker([tempLatLng.lat, tempLatLng.lng], {
+                color: '#999',
+                fillColor: '#999',
+                fillOpacity: 0.6,
+                radius: 10
+            }).addTo(map);
+            
+            // Update sidebar with location info
+            document.getElementById('lat').textContent = tempLatLng.lat.toFixed(6);
+            document.getElementById('lng').textContent = tempLatLng.lng.toFixed(6);
+            document.getElementById('location-info').style.display = 'block';
+        });
+        let userLocation = null;
+        const policeStationMarkers = L.layerGroup();
+
+        // Add these new variables at the start with your other variables
+let userLocationMarker = null;
+
+// Add this new icon definition near your other icon definitions
+const userLocationIcon = L.divIcon({
+    className: 'user-location-icon',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
+});
+
+        // Create custom police station icon with a building-like appearance
+        const policeStationIcon = L.divIcon({
+            className: 'police-station-icon',
+            html: `<svg viewBox="0 0 24 24" fill="#1a237e">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 6h7c-.53 4.11-3.28 7.78-7 8.94V7H5v6.94C7.72 12.78 4.97 9.11 4.44 5h7z"/>
+                   </svg>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 36],
+            popupAnchor: [0, -36]
+        });
+
+        // Get user location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+        
+                        // Remove previous user location marker if it exists
+                        if (userLocationMarker) {
+                            map.removeLayer(userLocationMarker);
+                        }
+        
+                        // Add new user location marker
+                        userLocationMarker = L.marker([userLocation.lat, userLocation.lng], {
+                            icon: userLocationIcon
+                        }).addTo(map);
+        
+                        userLocationMarker.bindPopup('<div style="padding: 8px;"><strong>Your Location</strong></div>');
+        
+                        map.setView([userLocation.lat, userLocation.lng], 13);
+                        loadPoliceStations();
+                    },
+                    (error) => {
+                        console.error('Error getting location:', error);
+                        userLocation = { lat: 19.0760, lng: 72.8777 };
+                        
+                        if (userLocationMarker) {
+                            map.removeLayer(userLocationMarker);
+                        }
+                        
+                        userLocationMarker = L.marker([userLocation.lat, userLocation.lng], {
+                            icon: userLocationIcon
+                        }).addTo(map);
+        
+                        userLocationMarker.bindPopup('<div style="padding: 8px;"><strong>Default Location (Mumbai)</strong></div>');
+                        
+                        loadPoliceStations();
+                    }
+                );
+            }
+        }
+
+        // Function to load police stations using Overpass API
+        async function loadPoliceStations() {
+            if (!userLocation) return;
+        
+            try {
+                const query = `
+                    [out:json][timeout:25];
+                    (
+                        // Query for police stations
+                        node["amenity"="police"]
+                            (around:10000,${userLocation.lat},${userLocation.lng});
+                        way["amenity"="police"]
+                            (around:10000,${userLocation.lat},${userLocation.lng});
+                        relation["amenity"="police"]
+                            (around:10000,${userLocation.lat},${userLocation.lng});
+                            
+                        // Query for police offices
+                        node["office"="police"]
+                            (around:10000,${userLocation.lat},${userLocation.lng});
+                        way["office"="police"]
+                            (around:10000,${userLocation.lat},${userLocation.lng});
+                            
+                        // Query for buildings tagged as police
+                        node["building"="police"]
+                            (around:10000,${userLocation.lat},${userLocation.lng});
+                        way["building"="police"]
+                            (around:10000,${userLocation.lat},${userLocation.lng});
+                    );
+                    out center;
+                    >;
+                    out skel qt;
+                `;
+                
+                const response = await fetch('https://overpass-api.de/api/interpreter', {
+                    method: 'POST',
+                    body: query
+                });
+                
+                const data = await response.json();
+                
+                policeStationMarkers.clearLayers();
+                
+                // Store processed stations with their locations
+                const stations = [];
+                const MINIMUM_DISTANCE = 50; // 50 meters minimum distance between stations
+                
+                data.elements.forEach(element => {
+                    // Get coordinates (handle both node and way/relation elements)
+                    const lat = element.lat || (element.center && element.center.lat);
+                    const lon = element.lon || (element.center && element.center.lon);
+                    
+                    if (!lat || !lon) return;
+                    
+                    // Calculate distance from user
+                    const distanceFromUser = calculateDistance(
+                        userLocation.lat, 
+                        userLocation.lng, 
+                        lat, 
+                        lon
+                    );
+                    
+                    // Only process if within 10km
+                    if (distanceFromUser <= 10000) {
+                        // Check if there's already a station nearby
+                        const nearbyStation = stations.find(station => {
+                            const distance = calculateDistance(
+                                station.lat,
+                                station.lon,
+                                lat,
+                                lon
+                            );
+                            return distance < MINIMUM_DISTANCE;
+                        });
+                        
+                        if (!nearbyStation) {
+                            // Get the best name available
+                            const name = element.tags ? (
+                                element.tags.name ||
+                                element.tags['name:en'] ||
+                                element.tags.operator ||
+                                'Police Station'
+                            ) : 'Police Station';
+                            
+                            // Add to stations array
+                            stations.push({
+                                lat,
+                                lon,
+                                name,
+                                distanceFromUser
+                            });
+                        }
+                    }
+                });
+                
+                // Create markers for unique stations
+                stations.forEach(station => {
+                    const marker = L.marker([station.lat, station.lon], {
+                        icon: policeStationIcon
+                    });
+                    
+                    marker.bindPopup(`
+                        <div style="padding: 12px;">
+                            <h3 style="margin: 0 0 8px 0; color: #1a237e;">Police Station</h3>
+                            <strong>${station.name}</strong><br>
+                            <span style="color: #666;">Distance: ${(station.distanceFromUser / 1000).toFixed(2)} km</span>
+                        </div>
+                    `);
+                    
+                    policeStationMarkers.addLayer(marker);
+                });
+                
+                // Add 10km radius circle
+                const radiusCircle = L.circle([userLocation.lat, userLocation.lng], {
+                    radius: 10000,
+                    color: '#1a237e',
+                    fillColor: '#1a237e',
+                    fillOpacity: 0.1,
+                    weight: 1
+                });
+                
+                policeStationMarkers.addLayer(radiusCircle);
+                map.addLayer(policeStationMarkers);
+                
+            } catch (error) {
+                console.error('Error fetching police stations:', error);
+            }
+        }
+
+        // Modify window.onload to include getting user location
+        window.onload = () => {
+            loadMarkers();
+            getUserLocation();
+        };
+        
+     
+
+    </script>
+</body>
+</html>

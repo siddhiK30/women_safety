@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Incident Reporter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/2.15.0/mapbox-gl.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #4b5563;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f3f4f6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .title {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--secondary);
+        }
+
+        .map-container {
+            height: 400px;
+            border-radius: 1rem;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .incidents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .incident-card {
+            background: white;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s;
+        }
+
+        .incident-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .incident-media {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .incident-content {
+            padding: 1rem;
+        }
+
+        .incident-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .incident-location {
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+
+        .upload-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s;
+        }
+
+        .upload-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .detail-modal {
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .incident-detail {
+        padding: 20px;
+    }
+
+    .incident-detail-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .incident-detail-title {
+        font-size: 24px;
+        color: var(--primary);
+        margin-bottom: 10px;
+    }
+
+    .incident-detail-description {
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--secondary);
+        margin-bottom: 20px;
+    }
+
+    .incident-detail-meta {
+        font-size: 14px;
+        color: var(--secondary);
+        margin-bottom: 20px;
+    }
+
+    .detail-map-container {
+        height: 300px;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .close-button {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--secondary);
+    }
+
+    .incident-card {
+        cursor: pointer;
+    }
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Safety Incident Reporter</h1>
+            <p class="subtitle">Report and track safety incidents in your area</p>
+        </header>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+
+        <div class="incidents-grid" id="incidents">
+            <!-- Incidents will be populated here -->
+        </div>
+    </div>
+
+    <button class="upload-button" onclick="openModal()">Report Incident</button>
+
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <h2 class="title">Report New Incident</h2>
+            <form id="uploadForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-input" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Media</label>
+                    <input type="file" name="media" accept="image/*,video/*" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location (Click on map to set location)</label>
+                    <div id="location-preview" style="height: 200px; margin-bottom: 1rem;"></div>
+                    <input type="hidden" id="location-coords" name="location_coords">
+                </div>
+                <button type="submit" class="upload-button" style="position: static">Submit Report</button>
+            </form>
+        </div>
+    </div>
+
+ <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoibWFuYXZpMTIzIiwiYSI6ImNsc3hjdjAzcTAxb3kycXAya3IyNnl3djgifQ.vyfIAPnhABA9sgvga4F6XA';
+
+// Initialize main map
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [72.8777, 19.0760], // Mumbai coordinates
+    zoom: 15
+});
+
+function showIncidentDetail(incident) {
+    // Close any open popups
+    const popups = document.getElementsByClassName('mapboxgl-popup');
+    if (popups.length) {
+        Array.from(popups).forEach(popup => popup.remove());
+    }
+
+    const detailModal = document.getElementById('detailModal');
+    const detailContent = document.getElementById('incident-detail-content');
+    
+    // Create the detail view content
+    detailContent.innerHTML = `
+        <div class="incident-detail">
+            <img src="${incident.media_url}" class="incident-detail-image" 
+                 onerror="this.src='https://via.placeholder.com/800x400'">
+            <h2 class="incident-detail-title">${incident.title}</h2>
+            <div class="incident-detail-meta">
+                <p>Reported on: ${new Date(incident.created_at).toLocaleDateString()}</p>
+                
+            </div>
+            <p class="incident-detail-description">${incident.description}</p>
+            <div class="detail-map-container" id="detail-map-${incident.id}"></div>
+        </div>
+    `;
+
+    // Show the modal
+    detailModal.style.display = 'block';
+
+    // Initialize the detail map
+    const detailMap = new mapboxgl.Map({
+        container: `detail-map-${incident.id}`,
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [incident.longitude, incident.latitude],
+        zoom: 15
+    });
+
+    // Add marker to the detail map
+    new mapboxgl.Marker()
+        .setLngLat([incident.longitude, incident.latitude])
+        .addTo(detailMap);
+
+    // Trigger a resize event on the map after modal is shown
+    setTimeout(() => {
+        detailMap.resize();
+    }, 100);
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').style.display = 'none';
+}
+
+function addIncidentCard(incident) {
+    const card = document.createElement('div');
+    card.className = 'incident-card';
+    card.innerHTML = `
+        <img src="${incident.media_url}" class="incident-media" 
+             onerror="this.src='https://via.placeholder.com/300x200'">
+        <div class="incident-content">
+            <h3 class="incident-title">${incident.title}</h3>
+            <p class="incident-location">${incident.description}</p>
+        </div>
+    `;
+    
+    // Add click event listener to show detail view
+    card.addEventListener('click', () => showIncidentDetail(incident));
+    document.getElementById('incidents').appendChild(card);
+}
+
+// Load existing incidents
+fetch('/api/incidents/')
+    .then(response => response.json())
+    .then(incidents => {
+        incidents.forEach(incident => {
+            // Create marker
+            const marker = new mapboxgl.Marker()
+                .setLngLat([incident.longitude, incident.latitude])
+                .addTo(map);
+            
+            // Create popup with a "View Details" button
+            const popupContent = document.createElement('div');
+            popupContent.style.maxWidth = '300px';
+            popupContent.innerHTML = `
+                <div>
+                    <h3 style="margin-bottom: 8px;">${incident.title}</h3>
+                    <img src="${incident.media_url}" 
+                         style="width: 200px; height: 150px; object-fit: cover; margin-bottom: 8px;"
+                         onerror="this.src='https://via.placeholder.com/200x150'">
+                    <p style="margin-bottom: 8px;">${incident.description}</p>
+                    <button onclick="showIncidentDetail(${JSON.stringify(incident).replace(/"/g, '&quot;')});"
+                            style="background: #2563eb; color: white; padding: 8px 16px; 
+                                   border: none; border-radius: 4px; cursor: pointer;">
+                        View Details
+                    </button>
+                </div>
+            `;
+            
+            const popup = new mapboxgl.Popup({ offset: 25 })
+                .setDOMContent(popupContent);
+            
+            marker.setPopup(popup);
+            addIncidentCard(incident);
+        });
+    })
+    .catch(error => console.error('Error loading incidents:', error));
+
+// Modal functions
+function openModal() {
+    document.getElementById('uploadModal').style.display = 'block';
+    
+    // Initialize location preview map
+    const locationMap = new mapboxgl.Map({
+        container: 'location-preview',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [72.8777, 19.0760], // Mumbai coordinates
+        zoom: 10
+    });
+
+    let marker = null;
+
+    locationMap.on('click', (e) => {
+        if (marker) marker.remove();
+        
+        marker = new mapboxgl.Marker()
+            .setLngLat(e.lngLat)
+            .addTo(locationMap);
+        
+        document.getElementById('location-coords').value = 
+            JSON.stringify([e.lngLat.lng, e.lngLat.lat]);
+    });
+}
+
+// Handle modal clicks
+window.onclick = function(event) {
+    const uploadModal = document.getElementById('uploadModal');
+    const detailModal = document.getElementById('detailModal');
+    
+    if (event.target == uploadModal) {
+        uploadModal.style.display = 'none';
+    }
+    if (event.target == detailModal) {
+        detailModal.style.display = 'none';
+    }
+}
+
+// Form submission
+document.getElementById('uploadForm').onsubmit = function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const coords = document.getElementById('location-coords').value;
+    
+    if (!coords) {
+        alert('Please select a location on the map');
+        return;
+    }
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch('/api/incidents/create/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id) {
+            alert('Incident reported successfully!');
+            document.getElementById('uploadModal').style.display = 'none';
+            location.reload();
+        } else {
+            alert(data.error || 'Error creating incident');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error creating incident');
+    });
+};
+ </script>
+    <div class="modal" id="detailModal">
+        <div class="modal-content detail-modal">
+            <span class="close-button" onclick="closeDetailModal()">&times;</span>
+            <div id="incident-detail-content"></div>
+        </div>
+    </div>
+    
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Details</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #9370DB, #E6E6FA);
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-header h1 {
+            color: #4B0082;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .form-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4B0082;
+            font-weight: 500;
+        }
+
+        .form-group label.optional::after {
+            content: ' (Optional)';
+            color: #666;
+            font-weight: normal;
+            font-size: 0.9em;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E6E6FA;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #9370DB;
+            box-shadow: 0 0 0 3px rgba(147, 112, 219, 0.2);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .error {
+            color: #ff3860;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        button {
+            background: linear-gradient(135deg, #9370DB, #4B0082);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(75, 0, 130, 0.3);
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            color: #4CAF50;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-header">
+            <h1>KYC Verification</h1>
+            <p>Please provide your details for verification</p>
+        </div>
+        
+        <form id="kycForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" required>
+                    <div class="error" id="firstNameError">First name is required</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" required>
+                    <div class="error" id="lastNameError">Last name is required</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" required>
+                <div class="error" id="emailError">Please enter a valid email address</div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" required placeholder="+91 XXXXX XXXXX">
+                <div class="error" id="phoneError">Please enter a valid phone number</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" required>
+                    <div class="error" id="dobError">Date of birth is required</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nationality">Nationality</label>
+                    <select id="nationality" required>
+                        <option value="">Select Nationality</option>
+                        <option value="IN">India</option>
+                        <option value="OT">Other</option>
+                    </select>
+                    <div class="error" id="nationalityError">Please select your nationality</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Complete Address</label>
+                <textarea id="address" required placeholder="Enter your full address including city, state and PIN code"></textarea>
+                <div class="error" id="addressError">Address is required</div>
+            </div>
+
+            <div class="form-group">
+                <label for="aadhar">Aadhaar Card Number</label>
+                <input type="text" id="aadhar" required placeholder="XXXX XXXX XXXX">
+                <div class="error" id="aadharError">Please enter a valid 12-digit Aadhaar number</div>
+            </div>
+
+            <div class="form-group">
+                <label for="pan" class="optional">PAN Card Number</label>
+                <input type="text" id="pan" placeholder="XXXXXXXXXX">
+                <div class="error" id="panError">Please enter a valid 10-character PAN number</div>
+            </div>
+
+            <div class="form-group">
+                <label for="dlNumber" class="optional">Driver's License Number</label>
+                <input type="text" id="dlNumber" placeholder="XXXXXXXXXXXXXXX">
+                <div class="error" id="dlNumberError">Please enter a valid Driver's License number</div>
+            </div>
+
+            <div class="form-group">
+                <label for="voterId" class="optional">Voter ID Number</label>
+                <input type="text" id="voterId" placeholder="XXXXXXXXXXXXX">
+                <div class="error" id="voterIdError">Please enter a valid Voter ID number</div>
+            </div>
+
+            <button type="submit">Proceed with Verification</button>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            Your KYC details have been submitted successfully! We'll verify your information shortly.
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('kycForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Reset all errors
+            document.querySelectorAll('.error').forEach(error => {
+                error.style.display = 'none';
+            });
+
+            let isValid = true;
+            
+            // Required fields validation
+            const requiredFields = {
+                firstName: /^[A-Za-z\s]{2,}$/,
+                lastName: /^[A-Za-z\s]{2,}$/,
+                email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/,
+                dob: /.+/,
+                nationality: /.+/,
+                address: /.{10,}/,
+                aadhar: /^\d{4}\s?\d{4}\s?\d{4}$/
+            };
+
+            // Optional fields validation (only if filled)
+            const optionalFields = {
+                pan: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+                dlNumber: /^[A-Z0-9\-]{8,16}$/,
+                voterId: /^[A-Z0-9]{10,}$/
+            };
+
+            // Validate required fields
+            for (let [field, regex] of Object.entries(requiredFields)) {
+                const element = document.getElementById(field);
+                const errorElement = document.getElementById(`${field}Error`);
+                
+                if (!regex.test(element.value.trim())) {
+                    errorElement.style.display = 'block';
+                    isValid = false;
+                    element.style.borderColor = '#ff3860';
+                } else {
+                    element.style.borderColor = '#E6E6FA';
+                }
+            }
+
+            // Validate optional fields (only if they contain data)
+            for (let [field, regex] of Object.entries(optionalFields)) {
+                const element = document.getElementById(field);
+                const errorElement = document.getElementById(`${field}Error`);
+                
+                if (element.value.trim() && !regex.test(element.value.trim())) {
+                    errorElement.style.display = 'block';
+                    isValid = false;
+                    element.style.borderColor = '#ff3860';
+                } else {
+                    element.style.borderColor = '#E6E6FA';
+                }
+            }
+
+            if (isValid) {
+                // Hide form and show success message
+                document.getElementById('kycForm').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // You would typically send the form data to a server here
+                console.log('Form submitted successfully');
+            }
+        });
+
+        // Real-time validation
+        document.querySelectorAll('input, select, textarea').forEach(element => {
+            element.addEventListener('input', function() {
+                const errorElement = document.getElementById(`${this.id}Error`);
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                    this.style.borderColor = '#E6E6FA';
+                }
+            });
+        });
+
+        // Format Aadhaar number as user types
+        document.getElementById('aadhar').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                value = value.match(new RegExp('.{1,4}', 'g')).join(' ');
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

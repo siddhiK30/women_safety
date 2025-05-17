@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up to SurakshaSathi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+        }
+
+        .logo-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .logo {
+            height: 150px;
+        }
+
+        .card {
+            width: 384px;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #4B5563;
+            margin-bottom: 1rem;
+        }
+
+        .google-button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.25rem;
+            background: white;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+        }
+
+        .google-button:hover {
+            background: #F7F4FF;
+        }
+
+        .divider {
+            position: relative;
+            text-align: center;
+            margin: 0.75rem 0;
+        }
+
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1px solid #E5E7EB;
+            z-index: 0;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 0.75rem;
+            color: #7F00FF;
+            font-size: 0.875rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+
+        input::placeholder {
+            color: #6B7280;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3B82F6;
+        }
+
+        .signup-button {
+            width: 100%;
+            padding: 0.5rem;
+            background: #7F00FF;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+        }
+
+        .signup-button:hover {
+            background: #6A00CC;
+        }
+
+        .signin-text {
+            text-align: center;
+            font-size: 0.875rem;
+            color: #4B5563;
+            margin-bottom: 0.5rem;
+        }
+
+        .signin-text a {
+            color: #7F00FF;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .signin-text a:hover {
+            color: #6A00CC;
+        }
+
+        .footer {
+            border-top: 1px solid #E5E7EB;
+            padding-top: 0.75rem;
+            text-align: center;
+        }
+
+        .footer .developed-by {
+            font-size: 0.875rem;
+            color: #6B7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .footer .team-name {
+            font-size: 0.875rem;
+            color: #7F00FF;
+            background: #F7F4FF;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.125rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="{% static 'logo.png' %}" alt="SurakshaSathi logo" class="logo">
+    </div>
+
+    <div class="card">
+        <h2>Sign up to SurakshaSathi</h2>
+        <form method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
+        <p class="subtitle">Enter your details to create a new account</p>
+
+        <button class="google-button">
+            <svg height="20" width="20" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Google
+        </button>
+
+        <div class="divider">
+            <span>or</span>
+        </div>
+
+        <input type="text" name="username" placeholder="Username">
+        <input type="email" name="email" placeholder="Email address">
+        <input type="password" name="password" placeholder="Password">
+        <input type="password" name="password2" placeholder="Re-enter Password">
+        <input type="number" name="phone_number" placeholder="Phone number">
+        
+
+        <button class="signup-button">Sign Up</button>
+
+        </form>
+        <p class="signin-text">
+            Already have an account? <a href="/login/">Sign in</a>
+        </p>
+
+        <div style="text-align: center; margin: 10px 0;">
+            {% for message in messages %}
+                <p style="color: red; font-weight: 300; font-size: 14px;">{{message}}</p>
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            <div class="developed-by">Developed by</div>
+            <div class="team-name">Team Win-Tech</div>
+        </div>
+    </div>
+
+    {% comment %} <script>
+        // Add any JavaScript functionality here
+        document.querySelector('.signup-button').addEventListener('click', function() {
+            const username = document.querySelector('input[type="text"]').value;
+            const email = document.querySelector('input[type="email"]').value;
+            const password = document.querySelector('input[type="password"]').value;
+            const confirmPassword = document.querySelectorAll('input[type="password"]')[1].value;
+            const phone_number = document.querySelectorAll('input[type="number"]');
+            
+            // Basic validation
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            // Handle signup logic here
+            console.log('Sign up attempted with:', { username, email });
+        });
+
+        document.querySelector('.google-button').addEventListener('click', function() {
+            // Handle Google OAuth signup here
+            console.log('Google signup attempted');
+        });
+    </script> {% endcomment %}
+</body>
+</html>

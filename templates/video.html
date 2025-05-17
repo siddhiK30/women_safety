@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #7a31c3;
+}
+
+.container {
+    padding: 2rem;
+    width: 90%;
+    max-width: 800px;
+}
+
+.title {
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2rem;
+}
+
+.options {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.option {
+    background: #D1B2E0;
+    border-radius: 20px;
+    padding: 2rem;
+    width: 300px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.option a {
+    text-decoration: none;
+    display: block;
+}
+
+.call-button {
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.icon {
+    width: 80px;
+    height: 80px;
+    background: #7B1FA2;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon svg {
+    width: 40px;
+    height: 40px;
+    color: white;
+}
+
+.option h2 {
+    color: #7B1FA2;
+    margin-bottom: 1rem;
+}
+
+.option p {
+    color: #4a4a4a;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.option:hover {
+    transform: translateY(-10px);
+    background: #9C27B0;
+}
+
+.option:hover h2,
+.option:hover p {
+    color: white;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">How would you like to connect?</h1>
+        <div class="options">
+            <div class="option">
+                <a href="videocall.html">
+                    <button class="call-button">
+                        <div class="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h2>Video Call</h2>
+                    </button>
+                </a>
+                <p>Connect face-to-face with video and audio for a more personal experience</p>
+            </div>
+            
+            <div class="option">
+                <a href="voicecall.html">
+                    <button class="call-button">
+                        <div class="icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                        </div>
+                        <h2>Voice Call</h2>
+                    </button>
+                </a>
+                <p>Connect with audio only for a quick and reliable conversation</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

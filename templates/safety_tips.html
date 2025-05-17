@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Awareness Tips</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+            padding: 1.5rem;
+            color: #1e1b4b;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #6b21a8;
+            margin-bottom: 1rem;
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #d8b4fe;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #9333ea;
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.2);
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-btn {
+            background: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #6b21a8;
+            font-weight: 500;
+            font-size: 1.15rem;
+        }
+
+        .category-btn.active {
+            background: #9333ea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-btn:hover:not(.active) {
+            background: #f3e8ff;
+        }
+
+        .tips-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .tip-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tip-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .tip-title {
+            font-weight: 600;
+            color: #1e1b4b;
+            flex-grow: 1;
+        }
+
+        .tip-content {
+            margin-top: 1rem;
+            display: none;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .tip-content.active {
+            display: block;
+        }
+
+        .tip-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .tag {
+            background: #f3e8ff;
+            color: #6b21a8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+        }
+
+        .chevron-icon {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .tip-card.active .chevron-icon {
+            transform: rotate(90deg);
+        }
+
+        @media (max-width: 768px) {
+            .categories {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Safety Awareness Tips</h1>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search safety tips...">
+        </div>
+
+        <div class="categories">
+            {% for category in categories %}
+            <button class="category-btn {% if forloop.first %}active{% endif %}" data-category="{{ category.slug }}">
+                {{ category.name }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <div class="tips-container">
+            <!-- Tips will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <script>
+        function createTipCard(tip) {
+            const tagsHtml = tip.tags.map(tag => `<span class="tag">#${tag}</span>`).join('');
+            
+            return `
+                <div class="tip-card">
+                    <div class="tip-header">
+                        <h3 class="tip-title">${tip.title}</h3>
+                        <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+                    <div class="tip-content">
+                        <p>${tip.description}</p>
+                        <div class="tip-tags">${tagsHtml}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadTips(categorySlug) {
+            try {
+                const response = await fetch(`/api/tips/${categorySlug}/`);
+                const data = await response.json();
+                const container = document.querySelector('.tips-container');
+                container.innerHTML = data.tips.map(createTipCard).join('');
+            } catch (error) {
+                console.error('Error loading tips:', error);
+            }
+        }
+
+        // Load initial tips
+        loadTips(document.querySelector('.category-btn.active').dataset.category);
+
+        // Event Listeners
+        document.querySelector('.categories').addEventListener('click', (e) => {
+            const btn = e.target.closest('.category-btn');
+            if (btn) {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                loadTips(btn.dataset.category);
+            }
+        });
+
+        document.querySelector('.tips-container').addEventListener('click', (e) => {
+            const card = e.target.closest('.tip-card');
+            if (card) {
+                const content = card.querySelector('.tip-content');
+                const isActive = card.classList.contains('active');
+                
+                document.querySelectorAll('.tip-card').forEach(c => {
+                    c.classList.remove('active');
+                    c.querySelector('.tip-content').classList.remove('active');
+                });
+
+                if (!isActive) {
+                    card.classList.add('active');
+                    content.classList.add('active');
+                }
+            }
+        });
+
+        let searchTimeout;
+        document.querySelector('.search-input').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                const searchText = e.target.value.trim();
+                if (searchText) {
+                    try {
+                        const response = await fetch(`/api/tips/search/?q=${encodeURIComponent(searchText)}`);
+                        const data = await response.json();
+                        document.querySelector('.tips-container').innerHTML = 
+                            data.tips.map(createTipCard).join('');
+                    } catch (error) {
+                        console.error('Error searching tips:', error);
+                    }
+                } else {
+                    loadTips(document.querySelector('.category-btn.active').dataset.category);
+                }
+            }, 300);
+        });
+    </script>
+</body>
+</html>

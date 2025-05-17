@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    background: #7F00FF;
+    display: flex;
+    flex-direction: column;
+}
+
+.caller-info {
+    text-align: center;
+    padding: 2rem;
+    color: white;
+}
+
+.profile {
+    width: 150px;
+    height: 150px;
+    background: #D1B2E0;
+    border-radius: 50%;
+    margin: 2rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile svg {
+    width: 80px;
+    height: 80px;
+    color: #7B1FA2;
+}
+
+.call-status {
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    color: #D1B2E0;
+}
+
+.timer {
+    font-size: 2.5rem;
+    margin: 1rem 0;
+}
+
+.controls {
+    margin-top: auto;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.control-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: #D1B2E0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.control-btn:hover {
+    transform: scale(1.1);
+    background: #9C27B0;
+}
+
+.control-btn svg {
+    width: 30px;
+    height: 30px;
+    color: #7B1FA2;
+}
+
+.control-btn:hover svg {
+    color: white;
+}
+
+.end-call {
+    background: #ff4444;
+}
+
+.end-call svg {
+    color: white;
+}
+
+.emergency-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 0.5rem 1rem;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.emergency-btn:hover {
+    background: #cc0000;
+}
+</style>
+</head>
+<body>
+    <button class="emergency-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Emergency
+    </button>
+
+    <div class="caller-info">
+        <div class="profile">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <h1>Support Agent</h1>
+        <p class="call-status">On Call</p>
+        <div class="timer">00:00</div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 7l-7 5 7 5V7z"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+        </button>
+        
+        <button class="control-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+        </button>
+
+        <button class="control-btn end-call">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 7L6.62 7.79a1 1 0 0 0-.9.89L5 14.13a1 1 0 0 0 .9 1.11L23 17M1 7l16.38.79a1 1 0 0 1 .9.89l.72 5.45a1 1 0 0 1-.9 1.11L1 17"/>
+            </svg>
+        </button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Map</title>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        /* Global Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f8f7ff;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* Controls Section */
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            font-size: 16px;
+        }
+
+        .controls select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #e1d0f6;
+            border: 1px solid #c5a5e0;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+
+        .controls select:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(100, 75, 200, 0.6);
+        }
+
+        /* Info Box Section */
+        .info-box {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            font-size: 16px;
+            font-weight: bold;
+            color: #6a4c9c;
+            z-index: 1;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+        }
+
+        .info-box span {
+            color: #3e2a8c;
+        }
+
+        /* Recenter Button */
+        .recenter-btn {
+            position: absolute;
+            bottom: 50px;
+            left: 20px;
+            background-color: #6a4c9c;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .recenter-btn:hover {
+            background-color: #8b63b2;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .controls {
+                top: 15px;
+                left: 10px;
+                width: 90%;
+            }
+
+            .info-box {
+                bottom: 120px;
+                left: 10px;
+                width: 90%;
+            }
+
+            .recenter-btn {
+                bottom: 30px;
+                left: 10px;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if session_lat and session_lng %}
+    <div id="map"></div>
+
+    <!-- Transport Mode Selection -->
+    <div class="controls">
+        <label for="transport-mode"><strong>Select Transport Mode:</strong></label>
+        <select id="transport-mode">
+            <option value="walking">Walking</option>
+            <option value="cycling">Cycling</option>
+            <option value="driving" selected>Driving</option>
+        </select>
+    </div>
+
+    <!-- Time and Distance Info Box -->
+    <div class="info-box" id="info-box">
+        <p><strong>Time:</strong> <span id="time">Calculating...</span></p>
+        <p><strong>Distance:</strong> <span id="distance">Calculating...</span></p>
+    </div>
+
+    <!-- Recenter Button -->
+    <button class="recenter-btn" id="recenter-btn">Recenter</button>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWFuYXZpMTIzIiwiYSI6ImNsc3hjdjAzcTAxb3kycXAya3IyNnl3djgifQ.vyfIAPnhABA9sgvga4F6XA';
+
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [{{ session_lng }}, {{ session_lat }}],
+            zoom: 12
+        });
+
+        map.addControl(new mapboxgl.NavigationControl());
+
+        const sessionMarker = new mapboxgl.Marker({ color: 'red' })
+            .setLngLat([{{ session_lng }}, {{ session_lat }}])
+            .setPopup(new mapboxgl.Popup({ offset: 25 }).setText("{{ session.name }} - {{ session.location }}"))
+            .addTo(map);
+
+        let userMarker = null;
+        let routeLayerAdded = false;
+
+        function updateRoute(userLng, userLat, mode) {
+            if (routeLayerAdded) {
+                map.removeLayer('route');
+                map.removeSource('route');
+            }
+
+            const directionsRequest = `https://api.mapbox.com/directions/v5/mapbox/${mode}/${userLng},${userLat};{{ session_lng }},{{ session_lat }}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+
+            fetch(directionsRequest)
+                .then(response => response.json())
+                .then(data => {
+                    const route = data.routes[0].geometry.coordinates;
+                    const time = Math.round(data.routes[0].duration / 60); // Convert to minutes
+                    const hours = Math.floor(time / 60);
+                    const minutes = time % 60;
+                    const distance = (data.routes[0].distance / 1000).toFixed(2); // Convert to kilometers
+
+                    document.getElementById('time').textContent = `${hours}h ${minutes}m`;
+                    document.getElementById('distance').textContent = `${distance} km`;
+
+                    map.addLayer({
+                        id: 'route',
+                        type: 'line',
+                        source: {
+                            type: 'geojson',
+                            data: {
+                                type: 'Feature',
+                                geometry: {
+                                    type: 'LineString',
+                                    coordinates: route
+                                }
+                            }
+                        },
+                        layout: {
+                            'line-join': 'round',
+                            'line-cap': 'round'
+                        },
+                        paint: {
+                            'line-color': '#6a4c9c',
+                            'line-width': 4
+                        }
+                    });
+
+                    routeLayerAdded = true;
+                })
+                .catch(error => console.error('Error fetching directions:', error));
+        }
+
+        function updateUserLocation(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+
+            if (userMarker) {
+                userMarker.setLngLat([userLng, userLat]);
+            } else {
+                userMarker = new mapboxgl.Marker({ color: 'blue' })
+                    .setLngLat([userLng, userLat])
+                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setText("Your Location"))
+                    .addTo(map);
+            }
+
+            const transportMode = document.getElementById('transport-mode').value;
+            updateRoute(userLng, userLat, transportMode);
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                updateUserLocation,
+                error => console.error('Error fetching user location:', error),
+                { enableHighAccuracy: true }
+            );
+        } else {
+            console.error('Geolocation is not supported by this browser.');
+        }
+
+        document.getElementById('recenter-btn').addEventListener('click', () => {
+            if (userMarker) {
+                const userLngLat = userMarker.getLngLat();
+                map.flyTo({ center: [userLngLat.lng, userLngLat.lat], zoom: 14 });
+            }
+        });
+
+        document.getElementById('transport-mode').addEventListener('change', () => {
+            if (userMarker) {
+                const userLngLat = userMarker.getLngLat();
+                updateRoute(userLngLat.lng, userLngLat.lat, document.getElementById('transport-mode').value);
+            }
+        });
+    </script>
+    {% else %}
+    <p>Unable to display the map or route. Please check the session location.</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,446 @@
+:root {
+    --bg-color: #F3F4F6;
+    --text-color: #1F2937;
+    --sidebar-bg: #FFFFFF;
+    --card-bg: #FFFFFF;
+    --border-color: #e5e7eb;
+    --metric-text: #1F2937;
+    --metric-label: #4B5563;
+    --card-background: #FFFFFF;
+    --card-text: #1F2937;
+    --card-subtext: #6B7280;
+}
+
+.logout-button {
+    background-color:rgb(141, 94, 211);
+    color: rgb(19, 12, 28);
+    border: none;
+    padding: 15px 60px;
+    border-radius: 15px;
+    font-size: 20px;
+   
+    
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+
+.profile-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #8B5CF6;
+}
+
+.logout-button:hover {
+    background-color: #caaee8;
+}
+[data-theme="dark"] {
+    --bg-color: #1F2937;
+    --text-color: #85a8ee;
+    --sidebar-bg: #111827;
+    
+   
+    --card-bg: #374151;
+    --border-color: #4B5563;
+    --metric-text: #ecf1fb;
+    --metric-label: #D1D5DB;
+    --card-background: #374151;  /* Changed to match metric card dark background */
+    --card-text: #e2e5ed;
+    --card-subtext: #D1D5DB;
+}
+.bg-white {
+    background-color: var(--card-background) !important;
+    transition: background-color 0.3s ease;
+}
+
+.text-gray-600 {
+    color: var(--card-subtext) !important;
+    transition: color 0.3s ease;
+}
+
+.text-xl {
+    color: var(--card-text) !important;
+    transition: color 0.3s ease;
+}
+
+/* Add hover effect for dark theme */
+[data-theme="dark"] .bg-white:hover {
+    background-color: #27292b !important;  /* Slightly lighter shade for hover */
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.emergency-btn {
+    background-color: #E6E6FA;  /* Lavender color */
+    transition: all 0.3s ease;
+}
+
+.emergency-btn:hover {
+    background-color: #D8D8FF;  /* Slightly darker lavender on hover */
+    transform: translateY(-1px);
+}
+
+[data-theme="dark"] .emergency-btn {
+    background-color: #9D8EC7;  /* Darker lavender for dark theme */
+}
+
+[data-theme="dark"] .emergency-btn:hover {
+    
+    background-color: #8A7BB8;
+}
+[data-theme="dark"] .sidebar:hover {
+    background-color:#211f25;
+}
+
+
+.theme-sidebar {
+    background-color: var(--sidebar-bg);
+}
+
+.theme-card {
+    background-color: var(--card-bg);
+}
+
+.fixed-sidebar {
+    position: fixed;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.header-wrapper {
+    position: fixed;
+    top: 0;
+    right: 1.5rem;
+    width: calc(100% - 18rem);
+    padding: 1rem 0;
+    background-color: var(--bg-color);
+    z-index: 10;
+}
+
+.sidebar-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-bottom: 80px;
+}
+
+.profile-section {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.main-content {
+    margin-left: 16rem;
+    padding-top: 5rem; /* Add padding to account for fixed header */
+    min-height: 100vh;
+}
+
+.right-sidebar {
+    position: absolute;
+    right: 1rem;
+    top: 4rem;
+    width: 16rem;
+    max-height: 350px;
+    background-color: var(--card-bg);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+}
+
+#nearby-user-list {
+    overflow-y: auto;
+    max-height: calc(100vh - 14rem);  /* Adjusted for smaller header */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+/* Updated styles for user cards */
+#nearby-user-list > div {
+    background-color: var(--bg-color);
+    border-radius: 0.75rem;  /* Reduced from 1rem */
+    padding: 0.75rem;  /* Reduced from 1.5rem */
+    margin-bottom: 0.5rem;  /* Reduced from 1rem */
+    transition: transform 0.2s;
+}
+
+/* Updated username text styles */
+#nearby-user-list p.text-lg {
+    font-size: 1rem;  /* Reduced from 1.75rem */
+    line-height: 1.5rem;  /* Reduced from 2.25rem */
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;  /* Reduced from 0.75rem */
+}
+
+/* Distance text styles */
+#nearby-user-list p.text-base {
+    font-size: 0.875rem;  /* Reduced from 1.25rem */
+    color: var(--metric-label);
+}
+
+/* Hover effect */
+#nearby-user-list > div:hover {
+    transform: translateY(-1px);  /* Reduced from -2px */
+    background-color: var(--bg-color);
+    opacity: 0.95;
+}
+
+/* Dark theme specific styles */
+[data-theme="dark"] #nearby-user-list > div {
+    background-color: #374151;
+}
+
+[data-theme="dark"] #nearby-user-list > div:hover {
+    background-color: #4B5563;
+}
+
+/* Original color classes */
+.bg-gray-50 {
+    background-color: #F9FAFB;
+}
+
+.hover\:bg-gray-100:hover {
+    background-color: #F3F4F6;
+}
+.sos-button {
+    width: 250px;
+    height: 250px;
+    box-shadow: 0 0 50px rgba(239, 68, 68, 0.5);
+    transition: transform 0.2s;
+    margin: 2rem auto;
+}
+
+.sos-button:hover {
+    transform: scale(1.05);
+}
+
+.user-card {
+    background-color: var(--card-bg);
+    transition: transform 0.2s;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+}
+
+.metric-card {
+    background-color: var(--card-bg);
+    transition: all 0.3s ease;
+}
+
+.metric-card h3 {
+    color: var(--metric-label);
+}
+
+.metric-card p {
+    color: var(--metric-text);
+}
+
+.find-button {
+    background-color: #8B5CF6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.find-button:hover {
+    background-color: #7C3AED;
+}
+.sos-container {
+    margin-top: 7rem;
+    margin-bottom: 3rem;
+    margin-right: 16rem;
+}
+.chat-icon {
+    background-color: #F3E8FF;
+    color: #7C3AED;
+}
+.chatbot-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.chatbot-container {
+    background-color: rgba(255, 255, 255, 0.20);
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chatbot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chatbot-messages {
+    height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: transparent;
+}
+
+.chatbot-input input {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #000000;  /* Changed to black */
+    font-weight: 500;  /* Made slightly bolder for better visibility */
+}
+
+.chatbot-input input::placeholder {
+    color: rgba(0, 0, 0, 0.5);  /* Changed placeholder to semi-transparent black */
+}
+
+/* Keep the rest of the input container styling */
+.chatbot-input {
+    display: flex;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.message {
+    margin-bottom: 1rem;
+    max-width: 80%;
+}
+
+.bot-message {
+    background-color: rgba(243, 244, 246, 0.7);  /* Changed to a much lighter color */
+    color: rgb(55, 65, 81);  /* Darker text color for contrast */
+    padding: 0.75rem;
+    border-radius: 12px;
+    margin-right: auto;
+}
+
+/* Keep user message style for reference */
+.user-message {
+    background-color: rgba(139, 92, 246, 0.7);
+    color: white;
+    padding: 0.75rem;
+    border-radius: 12px;
+    margin-left: auto;
+}
+
+.chatbot-overlay.active {
+    display: flex;
+}
+
+/* Style for the send button */
+.chatbot-input button {
+    background-color: rgba(139, 92, 246, 0.8);
+    color: white;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.chatbot-input button:hover {
+    background-color: rgba(139, 92, 246, 0.9);
+}
+
+/* Additional styles for better visibility */
+.chatbot-header h2 {
+    color: white;
+}
+
+.chatbot-header button {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Scrollbar styling for the messages container */
+.chatbot-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chatbot-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+.chart-container {
+width: 100%;
+height: 300px;
+margin-right: 0;
+}
+.success-message {
+    background-color: #dcfce7;
+    color: #166534;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+.ask-all-help-btn {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.ask-all-help-btn.visible {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes sirenPulse {
+    0% {
+        background-color: #ff0000;
+        transform: scale(1);
+    }
+    50% {
+        background-color: #cc0000;
+        transform: scale(1.1);
+    }
+    100% {
+        background-color: #ff0000;
+        transform: scale(1);
+    }
+}
+.siren-button.active {
+    animation: sirenPulse 1s infinite !important;
+    background-color: #ff0000 !important;
+}
+
+.siren-button.active svg {
+    color: white !important;
+}
