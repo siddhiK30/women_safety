@@ -148,3 +148,4 @@ incremental
 inflection
 iniconfig
 intake
+pyaudio==0.2.13
